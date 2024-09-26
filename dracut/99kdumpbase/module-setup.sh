@@ -951,8 +951,11 @@ get_pcs_fence_kdump_nodes() {
     local nodes
 
     pcs cluster sync &> /dev/null && pcs cluster cib-upgrade &> /dev/null
-    # get cluster nodes from cluster cib, get interface and ip address
-    nodelist=$(pcs cluster cib | xmllint --xpath "/cib/status/node_state/@uname" -)
+    # 'remote' node has no ip address, only 'cluster' node can reboot other machines
+    # That is what we care about.
+    # e.g
+    #    cluster node: dell-r730-062.bkr.lab.eng.rdu2.dc.redhat.com (1)
+    nodelist=$(crmadmin  --nodes cluster | awk -F '[: ]' '{print $4}')
 
     # nodelist is formed as 'uname="node1" uname="node2" ... uname="nodeX"'
     # we need to convert each to node1, node2 ... nodeX in each iteration
